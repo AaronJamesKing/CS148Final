@@ -40,7 +40,8 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     cubeSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(cubeSceneObject);
     
-    
+    // Add a balloon
+    /*
     std::vector<std::shared_ptr<MeshObject>> balloonObject = MeshLoader::LoadMesh("assignment6/small_balloon.obj", &loadedMaterials);
     for (size_t i = 0; i < balloonObject.size(); ++i) {
         std::shared_ptr<Material> materialCopy = balloonMaterial->Clone();
@@ -55,6 +56,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     balloonSceneObject->Translate(glm::vec3(0.55f, 0.0f, 0.0f));
     balloonSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(balloonSceneObject);
+     */
 
     
     // Lights
@@ -71,13 +73,13 @@ std::shared_ptr<ColorSampler> Assignment6::CreateSampler() const
 {
     std::shared_ptr<JitterColorSampler> jitter = std::make_shared<JitterColorSampler>();
     // ASSIGNMENT 6 TODO: Change the grid size to be glm::ivec3(X, Y, 1).
-    jitter->SetGridSize(glm::ivec3(1, 1, 1));
+    jitter->SetGridSize(glm::ivec3(4, 4, 1));
 
     std::shared_ptr<SimpleAdaptiveSampler> sampler = std::make_shared<SimpleAdaptiveSampler>();
     sampler->SetInternalSampler(jitter);
 
     // ASSIGNMENT 6 TODO: Change the '1.f' in '1.f * SMALL_EPSILON' here to be higher and see what your results are. (Part 3)
-    sampler->SetEarlyExitParameters(1.f * SMALL_EPSILON, 4);
+    sampler->SetEarlyExitParameters(1.f * SMALL_EPSILON, 16);
 
     // ASSIGNMENT 6 TODO: Comment out 'return jitter;' to use the adaptive sampler. (Part 2)
     //return jitter;
@@ -92,7 +94,7 @@ std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scen
 int Assignment6::GetSamplesPerPixel() const
 {
     // ASSIGNMENT 6 TODO: Change the '1' here to increase the maximum number of samples used per pixel. (Part 1).
-    return 1;
+    return 32;
 }
 
 bool Assignment6::NotifyNewPixelSample(glm::vec3 inputSampleColor, int sampleIndex)
