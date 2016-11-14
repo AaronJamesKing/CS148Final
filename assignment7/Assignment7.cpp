@@ -68,6 +68,7 @@ std::shared_ptr<Scene> Assignment7::CreateScene() const
      */
     
     
+    // Balloon
     std::vector<std::shared_ptr<aiMaterial>> loadedMaterials2;
     std::vector<std::shared_ptr<MeshObject>> balloonObject = MeshLoader::LoadMesh("assignment7/small_balloon.obj", &loadedMaterials2);
     for (size_t i = 0; i < balloonObject.size(); ++i) {
@@ -76,7 +77,6 @@ std::shared_ptr<Scene> Assignment7::CreateScene() const
         balloonObject[i]->SetMaterial(materialCopy);
     }
     
-    // Balloon
     std::shared_ptr<SceneObject> balloonSceneObject = std::make_shared<SceneObject>();
     balloonSceneObject->AddMeshObject(balloonObject);
     balloonSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
@@ -106,7 +106,6 @@ std::shared_ptr<Scene> Assignment7::CreateScene() const
         deerObject[i]->SetMaterial(materialCopy);
     }
     
-    // Balloon
     std::shared_ptr<SceneObject> deerSceneObject = std::make_shared<SceneObject>();
     deerSceneObject->AddMeshObject(deerObject);
     deerSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
