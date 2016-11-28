@@ -85,12 +85,13 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     if (!didTrace) return;
     
     // STORE OR SCATTER
+    glm::vec3 opposite = state.intersectionRay.GetRayDirection() * glm::vec3(-1.0f);
     if (path.size() > 1){
         // STORE
         Photon photon;
         photon.position = state.intersectionRay.GetRayPosition(state.intersectionT);
         photon.intensity = lightIntensity;
-        photon.toLightRay.SetRayDirection(state.intersectionRay.GetRayDirection() * glm::vec3(-1.0f));
+        photon.toLightRay.SetRayDirection(opposite);
         photonMap.insert(photon);
     }
     
@@ -108,12 +109,12 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     float u1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     float u2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     
-    float r = std::sqrt(u1);
+    float r = sqrt(u1);
     float theta = 2.0f * PI * u2;
     
     float x = r * cos(theta);
     float y = r * sin(theta);
-    float z = sqrtf(1.0f - u1);
+    float z = sqrt(1.0f - u1);
     
     glm::vec3 sampleVector = glm::normalize(glm::vec3(x, y, z));
     
@@ -121,10 +122,10 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     glm::vec3 n = state.ComputeNormal();
     
     glm::vec3 unitVector;
-    if (1.0f - fabs(glm::dot(n, glm::vec3(1, 0, 0))) > 0.001f){
+    if (1.0f - fabs(glm::dot(n, glm::vec3(1.f, 0.f, 0.f))) > 0.001f){
         unitVector = glm::vec3(1.f, 0.f, 0.f);
     }
-    else if (1.0f - fabs(glm::dot(n, glm::vec3(0, 1, 0))) > 0.001f){
+    else if (1.0f - fabs(glm::dot(n, glm::vec3(0.f, 1.f, 0.f))) > 0.001f){
         unitVector = glm::vec3(0.f, 1.f, 0.f);
     }
     else {
@@ -137,8 +138,10 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     glm::mat3 matrix = glm::mat3(t, b, n);
     glm::vec3 direction = matrix * sampleVector;
     
-    //state.intersectionRay.SetRayDirection(direction);
-    Ray nextRay = Ray(state.intersectionRay.GetRayPosition(state.intersectionT), direction);
+    glm::vec3 actualPosition = state.intersectionRay.GetRayPosition(state.intersectionT);
+    glm::vec3 offset = glm::normalize(opposite) / 150.0f;
+    
+    Ray nextRay = Ray(actualPosition + offset, direction);
     path.push_back(0);
     TracePhoton(photonMap, &nextRay, lightIntensity, path, currentIOR, remainingBounces - 1);
     
