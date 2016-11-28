@@ -11,6 +11,8 @@
 #include "common/Rendering/Material/Material.h"
 #include "glm/gtx/component_wise.hpp"
 
+#include <math.h>
+
 #define VISUALIZE_PHOTON_MAPPING 1
 
 PhotonMappingRenderer::PhotonMappingRenderer(std::shared_ptr<class Scene> scene, std::shared_ptr<class ColorSampler> sampler):
@@ -83,15 +85,12 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     if (!didTrace) return;
     
     // STORE OR SCATTER
-    if (path.size() == 1){
-        // DO NOT STORE
-    }
-    else {
+    if (path.size() > 1){
         // STORE
         Photon photon;
         photon.position = state.intersectionRay.GetRayPosition(state.intersectionT);
         photon.intensity = lightIntensity;
-        photon.toLightRay.SetRayDirection(state.intersectionRay.GetRayDirection() * glm::vec3(-1.0));
+        photon.toLightRay.SetRayDirection(state.intersectionRay.GetRayDirection() * glm::vec3(-1.0f));
         photonMap.insert(photon);
     }
     
@@ -101,7 +100,7 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     glm::vec3 diff = hitMaterial->GetBaseDiffuseReflection();
     
     // ROULETTE
-    float p_r = std::max(std::max(diff.x, diff.y), diff.z);
+    float p_r = fmax(fmax(diff.x, diff.y), diff.z);
     float rando = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     if (rando >= p_r) return;
     
@@ -109,12 +108,12 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     float u1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     float u2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     
-    float r = glm::sqrt(u1);
-    float theta = 2.0 * PI * u2;
+    float r = std::sqrt(u1);
+    float theta = 2.0f * PI * u2;
     
-    float x = r * glm::cos(theta);
-    float y = r * glm::sin(theta);
-    float z = sqrtf(1.0 - u1);
+    float x = r * cos(theta);
+    float y = r * sin(theta);
+    float z = sqrtf(1.0f - u1);
     
     glm::vec3 sampleVector = glm::normalize(glm::vec3(x, y, z));
     
@@ -122,14 +121,14 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     glm::vec3 n = state.ComputeNormal();
     
     glm::vec3 unitVector;
-    if (1 - glm::abs(glm::dot(n, glm::vec3(1, 0, 0))) > 0.05){
-        unitVector = glm::vec3(1, 0, 0);
+    if (1.0f - fabs(glm::dot(n, glm::vec3(1, 0, 0))) > 0.001f){
+        unitVector = glm::vec3(1.f, 0.f, 0.f);
     }
-    else if (1 - glm::abs(glm::dot(n, glm::vec3(0, 1, 0))) > 0.05){
-        unitVector = glm::vec3(0, 1, 0);
+    else if (1.0f - fabs(glm::dot(n, glm::vec3(0, 1, 0))) > 0.001f){
+        unitVector = glm::vec3(0.f, 1.f, 0.f);
     }
     else {
-        unitVector = glm::vec3(0, 0, 1);
+        unitVector = glm::vec3(0.f, 0.f, 1.f);
     }
     
     glm::vec3 t = glm::cross(n, unitVector);
@@ -138,9 +137,10 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
     glm::mat3 matrix = glm::mat3(t, b, n);
     glm::vec3 direction = matrix * sampleVector;
     
-    state.intersectionRay.SetRayDirection(direction);
-    path.push_back('A');
-    TracePhoton(photonMap, &(state.intersectionRay), lightIntensity, path, currentIOR, remainingBounces - 1);
+    //state.intersectionRay.SetRayDirection(direction);
+    Ray nextRay = Ray(state.intersectionRay.GetRayPosition(state.intersectionT), direction);
+    path.push_back(0);
+    TracePhoton(photonMap, &nextRay, lightIntensity, path, currentIOR, remainingBounces - 1);
     
 }
 
