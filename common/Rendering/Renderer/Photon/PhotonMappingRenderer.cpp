@@ -70,10 +70,78 @@ void PhotonMappingRenderer::TracePhoton(PhotonKdtree& photonMap, Ray* photonRay,
      *        ... set photon properties ...
      *        photonMap.insert(myPhoton);
      */
+    
+    // REMAINING BOUNCES
+    if (remainingBounces < 0) return;
 
     assert(photonRay);
     IntersectionState state(0, 0);
     state.currentIOR = currentIOR;
+    
+    // TRACE
+    bool didTrace = storedScene->Trace(photonRay, &state);
+    if (!didTrace) return;
+    
+    // STORE OR SCATTER
+    if (path.size() == 1){
+        // DO NOT STORE
+    }
+    else {
+        // STORE
+        Photon photon;
+        photon.position = state.intersectionRay.GetRayPosition(state.intersectionT);
+        photon.intensity = lightIntensity;
+        photon.toLightRay.SetRayDirection(state.intersectionRay.GetRayDirection() * glm::vec3(-1.0));
+        photonMap.insert(photon);
+    }
+    
+    // SCATTER
+    const MeshObject* hitMeshObject = state.intersectedPrimitive->GetParentMeshObject();
+    const Material* hitMaterial = hitMeshObject->GetMaterial();
+    glm::vec3 diff = hitMaterial->GetBaseDiffuseReflection();
+    
+    // ROULETTE
+    float p_r = std::max(std::max(diff.x, diff.y), diff.z);
+    float rando = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    if (rando >= p_r) return;
+    
+    // HEMISPHERE SAMPLE
+    float u1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float u2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    
+    float r = glm::sqrt(u1);
+    float theta = 2.0 * PI * u2;
+    
+    float x = r * glm::cos(theta);
+    float y = r * glm::sin(theta);
+    float z = sqrtf(1.0 - u1);
+    
+    glm::vec3 sampleVector = glm::normalize(glm::vec3(x, y, z));
+    
+    // HEMISPHERE RAY TRANSFORMATION
+    glm::vec3 n = state.ComputeNormal();
+    
+    glm::vec3 unitVector;
+    if (1 - glm::abs(glm::dot(n, glm::vec3(1, 0, 0))) > 0.05){
+        unitVector = glm::vec3(1, 0, 0);
+    }
+    else if (1 - glm::abs(glm::dot(n, glm::vec3(0, 1, 0))) > 0.05){
+        unitVector = glm::vec3(0, 1, 0);
+    }
+    else {
+        unitVector = glm::vec3(0, 0, 1);
+    }
+    
+    glm::vec3 t = glm::cross(n, unitVector);
+    glm::vec3 b = glm::cross(n, t);
+    
+    glm::mat3 matrix = glm::mat3(t, b, n);
+    glm::vec3 direction = matrix * sampleVector;
+    
+    state.intersectionRay.SetRayDirection(direction);
+    path.push_back('A');
+    TracePhoton(photonMap, &(state.intersectionRay), lightIntensity, path, currentIOR, remainingBounces - 1);
+    
 }
 
 glm::vec3 PhotonMappingRenderer::ComputeSampleColor(const struct IntersectionState& intersection, const class Ray& fromCameraRay) const
