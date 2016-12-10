@@ -13,19 +13,15 @@ std::shared_ptr<Camera> Assignment6::CreateCamera() const
 std::shared_ptr<Scene> Assignment6::CreateScene() const
 {
     std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
+    
+    std::vector<std::shared_ptr<aiMaterial>> loadedMaterials;
 
-    // Material
+    /*
+    //// Cornell Box
+    
     std::shared_ptr<BlinnPhongMaterial> cubeMaterial = std::make_shared<BlinnPhongMaterial>();
     cubeMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
     cubeMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
-    
-    std::shared_ptr<BlinnPhongMaterial> balloonMaterial = std::make_shared<BlinnPhongMaterial>();
-    balloonMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
-    balloonMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
-    balloonMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("assignment6/rainbow.jpg"));
-
-    // Objects
-    std::vector<std::shared_ptr<aiMaterial>> loadedMaterials;
     
     std::vector<std::shared_ptr<MeshObject>> cubeObjects = MeshLoader::LoadMesh("CornellBox/CornellBox-Original.obj", &loadedMaterials);
     for (size_t i = 0; i < cubeObjects.size(); ++i) {
@@ -38,10 +34,17 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     cubeSceneObject->AddMeshObject(cubeObjects);
     cubeSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
     cubeSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
-    newScene->AddSceneObject(cubeSceneObject);
+    //newScene->AddSceneObject(cubeSceneObject);
     
-    // Add a balloon
-    /*
+    
+    
+    //// Balloon
+    
+    std::shared_ptr<BlinnPhongMaterial> balloonMaterial = std::make_shared<BlinnPhongMaterial>();
+    balloonMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
+    balloonMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    balloonMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("assignment6/rainbow.jpg"));
+    
     std::vector<std::shared_ptr<MeshObject>> balloonObject = MeshLoader::LoadMesh("assignment6/small_balloon.obj", &loadedMaterials);
     for (size_t i = 0; i < balloonObject.size(); ++i) {
         std::shared_ptr<Material> materialCopy = balloonMaterial->Clone();
@@ -55,9 +58,58 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     balloonSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
     balloonSceneObject->Translate(glm::vec3(0.55f, 0.0f, 0.0f));
     balloonSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
-    newScene->AddSceneObject(balloonSceneObject);
+    //newScene->AddSceneObject(balloonSceneObject);
      */
-
+    
+    
+    //// Fruit Bowl
+    
+    std::shared_ptr<BlinnPhongMaterial> fbMaterial = std::make_shared<BlinnPhongMaterial>();
+    fbMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
+    fbMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    fbMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/fruit_bowl.jpg"));
+    
+    std::vector<std::shared_ptr<MeshObject>> fbObject = MeshLoader::LoadMesh("final/fruit_bowl.obj", &loadedMaterials);
+    for (size_t i = 0; i < fbObject.size(); ++i) {
+        std::shared_ptr<Material> materialCopy = fbMaterial->Clone();
+        materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
+        fbObject[i]->SetMaterial(materialCopy);
+    }
+    
+    
+    std::shared_ptr<SceneObject> fbSceneObject = std::make_shared<SceneObject>();
+    fbSceneObject->AddMeshObject(fbObject);
+    fbSceneObject->Rotate(glm::vec3(0.f, 1.f, 0.f), PI / 2.f);
+    fbSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
+    fbSceneObject->Translate(glm::vec3(0.30f, 2.0f, -0.86f));
+    fbSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
+    newScene->AddSceneObject(fbSceneObject);
+    
+    
+    //// Table and Shelf
+    
+    std::shared_ptr<BlinnPhongMaterial> tableMaterial = std::make_shared<BlinnPhongMaterial>();
+    tableMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
+    tableMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    //tableMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/table_and_shelf.jpg"));
+    
+    std::vector<std::shared_ptr<MeshObject>> tableObject = MeshLoader::LoadMesh("final/wall_and_shelf.obj", &loadedMaterials);
+    for (size_t i = 0; i < tableObject.size(); ++i) {
+        std::shared_ptr<Material> materialCopy = tableMaterial->Clone();
+        materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
+        tableObject[i]->SetMaterial(materialCopy);
+    }
+    
+    
+    std::shared_ptr<SceneObject> tableSceneObject = std::make_shared<SceneObject>();
+    tableSceneObject->AddMeshObject(tableObject);
+    tableSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
+    tableSceneObject->Translate(glm::vec3(0.30f, 2.5f, -1.00f));
+    tableSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
+    newScene->AddSceneObject(tableSceneObject);
+    
+    
+    
     
     // Lights
     std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
@@ -73,7 +125,7 @@ std::shared_ptr<ColorSampler> Assignment6::CreateSampler() const
 {
     std::shared_ptr<JitterColorSampler> jitter = std::make_shared<JitterColorSampler>();
     // ASSIGNMENT 6 TODO: Change the grid size to be glm::ivec3(X, Y, 1).
-    jitter->SetGridSize(glm::ivec3(4, 4, 1));
+    jitter->SetGridSize(glm::ivec3(1, 1, 1));
 
     std::shared_ptr<SimpleAdaptiveSampler> sampler = std::make_shared<SimpleAdaptiveSampler>();
     sampler->SetInternalSampler(jitter);
@@ -94,7 +146,7 @@ std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scen
 int Assignment6::GetSamplesPerPixel() const
 {
     // ASSIGNMENT 6 TODO: Change the '1' here to increase the maximum number of samples used per pixel. (Part 1).
-    return 32;
+    return 16;
 }
 
 bool Assignment6::NotifyNewPixelSample(glm::vec3 inputSampleColor, int sampleIndex)
