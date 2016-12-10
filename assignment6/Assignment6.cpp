@@ -5,8 +5,11 @@ std::shared_ptr<Camera> Assignment6::CreateCamera() const
 {
     const glm::vec2 resolution = GetImageOutputResolution();
     std::shared_ptr<Camera> camera = std::make_shared<PerspectiveCamera>(resolution.x / resolution.y, 26.6f);
-    camera->SetPosition(glm::vec3(0.f, -4.1469f, 0.73693f));
+    camera->SetPosition(glm::vec3(0.f, -4.f, 5.2f));
     camera->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
+    
+    //camera->Rotate(glm::vec3(0.f, 0.f, 1.f), PI / 10.f); // Looking left slightly
+    camera->Rotate(glm::vec3(-1.f, 0.f, 0.f), PI / 8.f); // Looking down slightly
     return camera;
 }
 
@@ -67,7 +70,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     std::shared_ptr<BlinnPhongMaterial> fbMaterial = std::make_shared<BlinnPhongMaterial>();
     fbMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
     fbMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
-    fbMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/fruit_bowl.jpg"));
+    //fbMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/fruit_bowl.jpg"));
     
     std::vector<std::shared_ptr<MeshObject>> fbObject = MeshLoader::LoadMesh("final/fruit_bowl.obj", &loadedMaterials);
     for (size_t i = 0; i < fbObject.size(); ++i) {
@@ -76,12 +79,11 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
         fbObject[i]->SetMaterial(materialCopy);
     }
     
-    
     std::shared_ptr<SceneObject> fbSceneObject = std::make_shared<SceneObject>();
     fbSceneObject->AddMeshObject(fbObject);
-    fbSceneObject->Rotate(glm::vec3(0.f, 1.f, 0.f), PI / 2.f);
+    fbSceneObject->Rotate(glm::vec3(0.f, 1.f, 0.f), PI / 0.75f); // turn the bowl backwards
     fbSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
-    fbSceneObject->Translate(glm::vec3(0.30f, 2.0f, -0.86f));
+    fbSceneObject->Translate(glm::vec3(-1.30f, 8.0f, -0.3f));
     fbSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(fbSceneObject);
     
@@ -91,36 +93,45 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     std::shared_ptr<BlinnPhongMaterial> tableMaterial = std::make_shared<BlinnPhongMaterial>();
     tableMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
     tableMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
-    //tableMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/table_and_shelf.jpg"));
+    //tableMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/shelf.jpg"));
     
-    std::vector<std::shared_ptr<MeshObject>> tableObject = MeshLoader::LoadMesh("final/wall_and_shelf.obj", &loadedMaterials);
+    std::vector<std::shared_ptr<MeshObject>> tableObject = MeshLoader::LoadMesh("final/shelf.obj", &loadedMaterials);
     for (size_t i = 0; i < tableObject.size(); ++i) {
         std::shared_ptr<Material> materialCopy = tableMaterial->Clone();
         materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
         tableObject[i]->SetMaterial(materialCopy);
     }
     
-    
     std::shared_ptr<SceneObject> tableSceneObject = std::make_shared<SceneObject>();
     tableSceneObject->AddMeshObject(tableObject);
     tableSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
-    tableSceneObject->Translate(glm::vec3(0.30f, 2.5f, -1.00f));
+    tableSceneObject->Translate(glm::vec3(0.30f, 8.0f, -1.00f));
     tableSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(tableSceneObject);
     
     
     
+    //// Lights
+    std::shared_ptr<PointLight> highPointLight = std::make_shared<PointLight>();
+    highPointLight->SetPosition(glm::vec3(0.f, 3.0101f, 4.f));
+    highPointLight->SetLightColor(glm::vec3(1.f, 1.f, 1.f));
+    newScene->AddLight(highPointLight);
     
-    // Lights
-    std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
-    pointLight->SetPosition(glm::vec3(0.01909f, 0.0101f, 1.97028f));
-    pointLight->SetLightColor(glm::vec3(1.f, 1.f, 1.f));
-    newScene->AddLight(pointLight);
+    std::shared_ptr<PointLight> lowPointLight = std::make_shared<PointLight>();
+    lowPointLight->SetPosition(glm::vec3(0.f, 5.0101f, -2.f));
+    lowPointLight->SetLightColor(glm::vec3(0.4f, 0.4f, 0.4f));
+    //newScene->AddLight(lowPointLight);
+    
+    std::shared_ptr<AreaLight> areaLight = std::make_shared<AreaLight>(glm::vec2(0.5f, 0.5f));
+    areaLight->SetSamplerAttributes(glm::vec3(2.f, 2.f, 1.f), 4);
+    areaLight->SetPosition(glm::vec3(-1.30f, 8.0f, -0.3f));
+    areaLight->SetLightColor(glm::vec3(0.4f, 0.4f, 0.4f));
+    //newScene->AddLight(areaLight);
     
 
     return newScene;
-
 }
+
 std::shared_ptr<ColorSampler> Assignment6::CreateSampler() const
 {
     std::shared_ptr<JitterColorSampler> jitter = std::make_shared<JitterColorSampler>();
@@ -134,8 +145,8 @@ std::shared_ptr<ColorSampler> Assignment6::CreateSampler() const
     sampler->SetEarlyExitParameters(1.f * SMALL_EPSILON, 16);
 
     // ASSIGNMENT 6 TODO: Comment out 'return jitter;' to use the adaptive sampler. (Part 2)
-    //return jitter;
-    return sampler;
+    return jitter;
+    //return sampler;
 }
 
 std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scene> scene, std::shared_ptr<ColorSampler> sampler) const
