@@ -23,7 +23,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     
     std::shared_ptr<BlinnPhongMaterial> bowlMaterial = std::make_shared<BlinnPhongMaterial>();
     bowlMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
-    bowlMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    bowlMaterial->SetSpecular(glm::vec3(0.9f, 0.9f, 0.9f), 80.f);
     bowlMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/bowl.jpg"));
     
     std::vector<std::shared_ptr<MeshObject>> bowlObject = MeshLoader::LoadMesh("final/bowl.obj", &loadedMaterials);
@@ -73,6 +73,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     appleMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
     appleMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
     appleMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/apple.tif"));
+    
     
     std::vector<std::shared_ptr<MeshObject>> appleObject = MeshLoader::LoadMesh("final/apple.obj", &loadedMaterials);
     for (size_t i = 0; i < appleObject.size(); ++i) {
@@ -146,7 +147,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     tableMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
     tableMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/shelf.jpg"));
     
-    std::vector<std::shared_ptr<MeshObject>> tableObject = MeshLoader::LoadMesh("final/shelf.obj", &loadedMaterials);
+    std::vector<std::shared_ptr<MeshObject>> tableObject = MeshLoader::LoadMesh("final/shelf_round.obj", &loadedMaterials);
     for (size_t i = 0; i < tableObject.size(); ++i) {
         std::shared_ptr<Material> materialCopy = tableMaterial->Clone();
         materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
@@ -156,7 +157,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     std::shared_ptr<SceneObject> tableSceneObject = std::make_shared<SceneObject>();
     tableSceneObject->AddMeshObject(tableObject);
     tableSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
-    tableSceneObject->Translate(glm::vec3(0.30f, 8.0f, -1.00f));
+    tableSceneObject->Translate(glm::vec3(0.30f, 8.5f, -0.7f));
     tableSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(tableSceneObject);
     
@@ -168,7 +169,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     wallMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
     wallMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/wall_large.jpg"));
     
-    std::vector<std::shared_ptr<MeshObject>> wallObject = MeshLoader::LoadMesh("final/wall_small_2.obj", &loadedMaterials);
+    std::vector<std::shared_ptr<MeshObject>> wallObject = MeshLoader::LoadMesh("final/flat_wall.obj", &loadedMaterials);
     for (size_t i = 0; i < wallObject.size(); ++i) {
         std::shared_ptr<Material> materialCopy = wallMaterial->Clone();
         materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
@@ -185,20 +186,28 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     
     
     //// Lights
-    std::shared_ptr<PointLight> highPointLight = std::make_shared<PointLight>();
-    highPointLight->SetPosition(glm::vec3(0.f, 2.f, 4.8f));
-    highPointLight->SetLightColor(glm::vec3(0.75f, 0.65f, 0.65f));
-    newScene->AddLight(highPointLight);
     
-    std::shared_ptr<PointLight> leftPointLight = std::make_shared<PointLight>();
-    leftPointLight->SetPosition(glm::vec3(-8.30f, 3.0f, 3.f));
-    leftPointLight->SetLightColor(glm::vec3(0.6f, 0.6f, 0.6f));
-    newScene->AddLight(leftPointLight);
+    std::shared_ptr<PointLight> highPointLight = std::make_shared<PointLight>();
+    highPointLight->SetPosition(glm::vec3(0.f, 2.f, 5.2f));
+    highPointLight->SetLightColor(glm::vec3(0.5f, 0.45f, 0.45f));
+    newScene->AddLight(highPointLight);
     
     std::shared_ptr<PointLight> lowPointLight = std::make_shared<PointLight>();
     lowPointLight->SetPosition(glm::vec3(0.f, 5.0101f, -2.f));
-    lowPointLight->SetLightColor(glm::vec3(0.5f, 0.5f, 0.5f));
-    newScene->AddLight(lowPointLight);
+    lowPointLight->SetLightColor(glm::vec3(0.6f, 0.6f, 0.6f));
+    //newScene->AddLight(lowPointLight);
+    
+    std::shared_ptr<AreaLight> areaLight = std::make_shared<AreaLight>(glm::vec2(.8f, .8f));
+    areaLight->SetPosition(glm::vec3(1.3f, 3.7f, 2.2f));
+    areaLight->Rotate(glm::vec3(1.0, 0.f, 0.f), PI / 2.f);
+    areaLight->SetLightColor(glm::vec3(0.5f, 0.5f, 0.5f));
+    newScene->AddLight(areaLight);
+    
+    std::shared_ptr<AreaLight> leftAreaLight = std::make_shared<AreaLight>(glm::vec2(.8f, .8f));
+    leftAreaLight->SetPosition(glm::vec3(-3.8f, 3.7f, 2.4f));
+    leftAreaLight->Rotate(glm::vec3(1.0, 0.f, 0.f), PI / 2.f);
+    leftAreaLight->SetLightColor(glm::vec3(0.7f, 0.7f, 0.7f));
+    newScene->AddLight(leftAreaLight);
     
 
     return newScene;
@@ -229,7 +238,7 @@ std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scen
 int Assignment6::GetSamplesPerPixel() const
 {
     // ASSIGNMENT 6 TODO: Change the '1' here to increase the maximum number of samples used per pixel. (Part 1).
-    return 1;
+    return 6;
 }
 
 bool Assignment6::NotifyNewPixelSample(glm::vec3 inputSampleColor, int sampleIndex)

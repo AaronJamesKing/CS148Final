@@ -1,0 +1,20 @@
+# This file uses centimeters as units for non-parametric coordinates.
+
+mtllib flat_wall.mtl
+g default
+v -6.397744 -4.243585 -3.101639
+v 4.698289 -4.243585 -3.101639
+v 4.742949 4.311047 -3.101639
+v -6.397744 4.311047 -3.101639
+vt 0.000000 0.000000
+vt 0.995991 0.000000
+vt 1.000000 0.869089
+vt 0.000000 0.869089
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+s off
+g polySurface1
+usemtl initialShadingGroup
+f 1/1/1 2/2/2 3/3/3 4/4/4
