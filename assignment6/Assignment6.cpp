@@ -193,9 +193,9 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     newScene->AddLight(highPointLight);
     
     std::shared_ptr<PointLight> lowPointLight = std::make_shared<PointLight>();
-    lowPointLight->SetPosition(glm::vec3(0.f, 5.0101f, -2.f));
+    lowPointLight->SetPosition(glm::vec3(0.f, 7.f, -2.f));
     lowPointLight->SetLightColor(glm::vec3(0.6f, 0.6f, 0.6f));
-    //newScene->AddLight(lowPointLight);
+    newScene->AddLight(lowPointLight);
     
     std::shared_ptr<AreaLight> areaLight = std::make_shared<AreaLight>(glm::vec2(.8f, .8f));
     areaLight->SetPosition(glm::vec3(1.3f, 3.7f, 2.2f));
@@ -238,7 +238,7 @@ std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scen
 int Assignment6::GetSamplesPerPixel() const
 {
     // ASSIGNMENT 6 TODO: Change the '1' here to increase the maximum number of samples used per pixel. (Part 1).
-    return 6;
+    return 1;
 }
 
 bool Assignment6::NotifyNewPixelSample(glm::vec3 inputSampleColor, int sampleIndex)
