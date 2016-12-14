@@ -9,9 +9,10 @@
 #include "common/Rendering/Renderer.h"
 
 #include "common/Scene/Geometry/Primitives/Triangle/Triangle.h"
-RayTracer::RayTracer(std::unique_ptr<class Application> app):
-    storedApplication(std::move(app))
+RayTracer::RayTracer(std::unique_ptr<class Application> app, int subimage):
+storedApplication(std::move(app))
 {
+    subimageNumber = subimage;
 }
 
 void RayTracer::Run()
@@ -22,41 +23,55 @@ void RayTracer::Run()
     std::shared_ptr<ColorSampler> currentSampler = storedApplication->CreateSampler();
     std::shared_ptr<Renderer> currentRenderer = storedApplication->CreateRenderer(currentScene, currentSampler);
     assert(currentScene && currentCamera && currentSampler && currentRenderer);
-
+    
     currentSampler->InitializeSampler(storedApplication.get(), currentScene.get());
-
+    
     // Scene preprocessing -- generate acceleration structures, etc.
     // After this call, we are guaranteed that the "acceleration" member of the scene and all scene objects within the scene will be non-NULL.
     currentScene->GenerateDefaultAccelerationData();
     currentScene->Finalize();
-
+    
     currentRenderer->InitializeRenderer();
-
+    
     // Prepare for Output
     const glm::vec2 currentResolution = storedApplication->GetImageOutputResolution();
     ImageWriter imageWriter(storedApplication->GetOutputFilename(), static_cast<int>(currentResolution.x), static_cast<int>(currentResolution.y));
-
+    
     // Perform forward ray tracing
     const int maxSamplesPerPixel = storedApplication->GetSamplesPerPixel();
     assert(maxSamplesPerPixel >= 1);
-
+    
+    int TOTAL_SEGMENTS = 8;
+    int currSegment = subimageNumber;
+    
+    int xPixels = static_cast<int>(currentResolution.x);
+    int segmentSize = xPixels / TOTAL_SEGMENTS;
+    int actualSegmentSize = segmentSize;
+    if (currSegment == TOTAL_SEGMENTS - 1) {
+        actualSegmentSize = xPixels - (segmentSize * (TOTAL_SEGMENTS - 1));
+    }
+    
+    int xStart = currSegment * segmentSize;
+    
     for (int r = 0; r < static_cast<int>(currentResolution.y); ++r) {
-        for (int c = 0; c < static_cast<int>(currentResolution.x); ++c) {
+        for (int c = xStart; c < xStart + actualSegmentSize; ++c) {
+            //            int intermediateC = c - xStart;
+            
             imageWriter.SetPixelColor(currentSampler->ComputeSamplesAndColor(maxSamplesPerPixel, 2, [&](glm::vec3 inputSample) {
                 const glm::vec3 minRange(-0.5f, -0.5f, 0.f);
                 const glm::vec3 maxRange(0.5f, 0.5f, 0.f);
                 const glm::vec3 sampleOffset = (maxSamplesPerPixel == 1) ? glm::vec3(0.f, 0.f, 0.f) : minRange + (maxRange - minRange) * inputSample;
-
+                
                 glm::vec2 normalizedCoordinates(static_cast<float>(c) + sampleOffset.x, static_cast<float>(r) + sampleOffset.y);
                 normalizedCoordinates /= currentResolution;
-
+                
                 // Construct ray, send it out into the scene and see what we hit.
                 std::shared_ptr<Ray> cameraRay = currentCamera->GenerateRayForNormalizedCoordinates(normalizedCoordinates);
                 assert(cameraRay);
-
+                
                 IntersectionState rayIntersection(storedApplication->GetMaxReflectionBounces(), storedApplication->GetMaxRefractionBounces());
                 bool didHitScene = currentScene->Trace(cameraRay.get(), &rayIntersection);
-
+                
                 // Use the intersection data to compute the BRDF response.
                 glm::vec3 sampleColor;
                 if (didHitScene) {
@@ -66,13 +81,13 @@ void RayTracer::Run()
             }), c, r);
         }
     }
-
+    
     // Apply post-processing steps (i.e. tone-mapper, etc.).
     storedApplication->PerformImagePostprocessing(imageWriter);
-
+    
     // Now copy whatever is in the HDR data and store it in the bitmap that we will save (aka everything will get clamped to be [0.0, 1.0]).
     imageWriter.CopyHDRToBitmap();
-
+    
     // Save image.
-    imageWriter.SaveImage();
+    imageWriter.SaveImage(currSegment);
 }

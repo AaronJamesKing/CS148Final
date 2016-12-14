@@ -184,6 +184,50 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     newScene->AddSceneObject(wallSceneObject);
     
     
+    glm::vec3 pictureTransform = glm::vec3(4.30f, 10.95f, 1.5f);
+    
+    //// Picture
+    std::shared_ptr<BlinnPhongMaterial> pictureMaterial = std::make_shared<BlinnPhongMaterial>();
+    pictureMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
+    pictureMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    pictureMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/picture.jpg"));
+    
+    std::vector<std::shared_ptr<MeshObject>> pictureObject = MeshLoader::LoadMesh("final/picture.obj", &loadedMaterials);
+    for (size_t i = 0; i < pictureObject.size(); ++i) {
+        std::shared_ptr<Material> materialCopy = pictureMaterial->Clone();
+        materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
+        pictureObject[i]->SetMaterial(materialCopy);
+    }
+    
+    std::shared_ptr<SceneObject> pictureSceneObject = std::make_shared<SceneObject>();
+    pictureSceneObject->AddMeshObject(pictureObject);
+    pictureSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
+    pictureSceneObject->Translate(pictureTransform);
+    pictureSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
+    newScene->AddSceneObject(pictureSceneObject);
+    
+    
+    //// Frame
+    std::shared_ptr<BlinnPhongMaterial> frameMaterial = std::make_shared<BlinnPhongMaterial>();
+    frameMaterial->SetDiffuse(glm::vec3(1.f, 1.f, 1.f));
+    frameMaterial->SetSpecular(glm::vec3(0.6f, 0.6f, 0.6f), 40.f);
+    frameMaterial->SetTexture("diffuseTexture", TextureLoader::LoadTexture("final/bowl.jpg"));
+    
+    std::vector<std::shared_ptr<MeshObject>> frameObject = MeshLoader::LoadMesh("final/frame2.obj", &loadedMaterials);
+    for (size_t i = 0; i < frameObject.size(); ++i) {
+        std::shared_ptr<Material> materialCopy = frameMaterial->Clone();
+        materialCopy->LoadMaterialFromAssimp(loadedMaterials[i]);
+        frameObject[i]->SetMaterial(materialCopy);
+    }
+    
+    std::shared_ptr<SceneObject> frameSceneObject = std::make_shared<SceneObject>();
+    frameSceneObject->AddMeshObject(frameObject);
+    frameSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
+    frameSceneObject->Translate(pictureTransform);
+    frameSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
+    newScene->AddSceneObject(frameSceneObject);
+    
+    
     
     //// Lights
     

@@ -21,21 +21,23 @@
 #define WAIT_ON_EXIT 0
 #endif
 
-int main(int argc, char** argv)  
+int main(int argc, char** argv)
 {
+    int segNumber = std::stoi(std::string(argv[1]));
+    
     std::unique_ptr<APPLICATION> currentApplication = make_unique<APPLICATION>();
-    RayTracer rayTracer(std::move(currentApplication));
-
-    DIAGNOSTICS_TIMER(timer, "Ray Tracer");
+    RayTracer rayTracer(std::move(currentApplication), segNumber);
+    
+    //    DIAGNOSTICS_TIMER(timer, "Ray Tracer");
     rayTracer.Run();
-    DIAGNOSTICS_END_TIMER(timer);
-
-    DIAGNOSTICS_PRINT();
-
+    //    DIAGNOSTICS_END_TIMER(timer);
+    
+    //    DIAGNOSTICS_PRINT();
+    
 #if defined(_WIN32) && WAIT_ON_EXIT
     int exit = 0;
     std::cin >> exit;
 #endif
-
+    
     return 0;
 }
