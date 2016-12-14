@@ -202,7 +202,7 @@ std::shared_ptr<Scene> Assignment6::CreateScene() const
     std::shared_ptr<SceneObject> pictureSceneObject = std::make_shared<SceneObject>();
     pictureSceneObject->AddMeshObject(pictureObject);
     pictureSceneObject->Rotate(glm::vec3(1.f, 0.f, 0.f), PI / 2.f);
-    pictureSceneObject->Translate(pictureTransform);
+    pictureSceneObject->Translate(pictureTransform + glm::vec3(0.f, -.05f, 0.f));
     pictureSceneObject->CreateAccelerationData(AccelerationTypes::UNIFORM_GRID);
     newScene->AddSceneObject(pictureSceneObject);
     
@@ -261,7 +261,7 @@ std::shared_ptr<ColorSampler> Assignment6::CreateSampler() const
 {
     std::shared_ptr<JitterColorSampler> jitter = std::make_shared<JitterColorSampler>();
     // ASSIGNMENT 6 TODO: Change the grid size to be glm::ivec3(X, Y, 1).
-    jitter->SetGridSize(glm::ivec3(1, 1, 1));
+    jitter->SetGridSize(glm::ivec3(4, 4, 1));
 
     std::shared_ptr<SimpleAdaptiveSampler> sampler = std::make_shared<SimpleAdaptiveSampler>();
     sampler->SetInternalSampler(jitter);
@@ -282,7 +282,7 @@ std::shared_ptr<class Renderer> Assignment6::CreateRenderer(std::shared_ptr<Scen
 int Assignment6::GetSamplesPerPixel() const
 {
     // ASSIGNMENT 6 TODO: Change the '1' here to increase the maximum number of samples used per pixel. (Part 1).
-    return 1;
+    return 32;
 }
 
 bool Assignment6::NotifyNewPixelSample(glm::vec3 inputSampleColor, int sampleIndex)
